@@ -83,24 +83,6 @@ for loop in np.arange(0,len(allApps)):
 allFileInfo.reset_index(drop=True,inplace=True)
 
 # Print email addresses - missing docs
-allFileInfo[(allFileInfo['GATEcard']==0) | (allFileInfo['CatCert']==0) |
-            (allFileInfo['GradCert']==0)]['Email']
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-    
+warnList=allFileInfo[(allFileInfo['GATEcard']==0) | (allFileInfo['CatCert']==0) |
+            (allFileInfo['GradCert']==0)][['AppNo','Name','Email', 'Mobile']]
+warnList.to_excel('warnList.xlsx')
