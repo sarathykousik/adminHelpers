@@ -10,7 +10,9 @@ Functions:
         | App no| Name | Category | GATE score exists? | Community certificate exists?|
     Next up:
          + open file + wait till file is closed + continue
-         
+      0 -> does not exist   
+      1 -> exists
+      2 -> not applicable
 """
 
 import os
@@ -32,43 +34,73 @@ xlsFile = 'allinfo.xlsx'
 #fileTypes = ('*.pdf', '*.png', '*.jpg') # the tuple of file types
 xlsData = pd.read_excel(os.path.join(folder,xlsFile)) 
 allApps = os.listdir(os.path.join(folder,'allApps'))[1:] #First file is log file
-allFileInfo = pd.DataFrame([])
+allFileInfo = pd.DataFrame()
 
 #Create struct
 for loop in np.arange(0,len(allApps)):
     print(allApps[loop])
     if(glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', '*GATE*'))):
-        gateFileExist='YES'
+        gateFileExist=1#'YES'
     else:
-        gateFileExist='*** NO **'
+        gateFileExist=0#'*** NO **'
     
     if(glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Grad*'))):
-        gradFileExist='YES'
+        gradFileExist=1#'YES'
     else:
-        gradFileExist='*** NO **'
+        gradFileExist=0#'*** NO **'
     
     if(glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Payment*'))):
-        payFileExist='YES'
+        payFileExist=1#'YES'
     else:
-        payFileExist='*** NO **'
+        payFileExist=0#'*** NO **'
     
     if(re.search('Scheduled.+',xlsData['birth_category_desc'][loop]) or 
        re.search('Economic.+',xlsData['birth_category_desc'][loop]) or 
        re.search('Non.+',xlsData['birth_category_desc'][loop])):
         if(glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Community*')) or
            glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Economically*'))):
-            casteFileExist='Exists'
+            casteFileExist=0#'YES'
         else:
-            casteFileExist='** Does not exist**'
+            casteFileExist=0#'** Does not exist**'
     else:
-        casteFileExist='- NA -'
+        casteFileExist=2#'- NA -'
            
-    allFileInfo = allFileInfo.append(
-                    pd.DataFrame([allApps[loop], xlsData['full_name'][loop], 
-                         xlsData['birth_category_desc'][loop],gateFileExist,    
-                         casteFileExist, gradFileExist,payFileExist]).transpose()
-                                     )
-allFileInfo.columns=[['App No', 'Name', 'Category', 'GATEcard?', 
-                                  'CatCert?', 'GradCert?','PayRef?' ]]
+        allFileInfo=allFileInfo.append(
+                    pd.DataFrame({
+                             'AppNo':[allApps[loop]], 
+                             'Name':[xlsData['full_name'][loop]],
+                             'Stream':[xlsData['exam_reg_no_4'][loop][0:2]], 
+                             'Email':[xlsData['email_id'][loop]],
+                             'Mobile':[int(xlsData['mobile'][loop])],
+                             'Category':[xlsData['birth_category_desc'][loop]],
+                             'GATEcard':[gateFileExist],
+                             'CatCert':[casteFileExist], 
+                             'GradCert':[gradFileExist],
+                             'PayRef':[payFileExist]
+                              }
+                              )
+                                )
+allFileInfo.reset_index(drop=True,inplace=True)
+
+# Print email addresses - missing docs
+allFileInfo[(allFileInfo['GATEcard']==0) | (allFileInfo['CatCert']==0) |
+            (allFileInfo['GradCert']==0)]['Email']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         
     
