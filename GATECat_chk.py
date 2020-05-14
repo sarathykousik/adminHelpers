@@ -34,16 +34,24 @@ def chkFun(xlsFile, folder):
         print(allApps[loop])
         if(glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', '*GATE*'))):
             gateFileExist=1#'YES'
+            gateFilePath=glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', '*GATE*'))[0]
         else:
             gateFileExist=0#'*** NO **'
+            gateFilePath=''
+        
+        # os.startfile(glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', '*GATE*'))[0])
         
         if(glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Grad*'))):
             gradFileExist=1#'YES'
+            gradFilePath=glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Grad*'))[0]
         else:
             gradFileExist=0#'*** NO **'
+            gradFilePath=''
         
         if(glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Payment*'))):
             payFileExist=1#'YES'
+            payFilePath=glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Payment*'))[0]
+            payFilePath=''
         else:
             payFileExist=0#'*** NO **'
         
@@ -52,33 +60,46 @@ def chkFun(xlsFile, folder):
            re.search('Non.+',xlsData['birth_category_desc'][loop])):
             if(glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Community*')) or
                glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Economically*'))):
-                casteFileExist=0#'YES'
+                casteFileExist=1#'YES'
+                if(glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Community*'))):
+                   catCertPath=glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Community*'))
+                elif(glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Economically*'))):
+                   catCertPath=glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Economically*'))
+        
+                # catCertPath=glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Community*'))
+                 # glob.glob(os.path.join(folder,'allApps',allApps[loop],'checklist', 'Economically*'))
             else:
                 casteFileExist=0#'** Does not exist**'
+                catCertPath=''
         else:
             casteFileExist=2#'- NA -'
+            catCertPath='- NA -'
                
-            allFileInfo=allFileInfo.append(
-                        pd.DataFrame({
-                                 'AppNo':[allApps[loop]], 
-                                 'Name':[xlsData['full_name'][loop]],
-                                 'Stream':[xlsData['exam_reg_no_4'][loop][0:2]], 
-                                 'Email':[xlsData['email_id'][loop]],
-                                 'Mobile':[int(xlsData['mobile'][loop])],
-                                 'Category':[xlsData['birth_category_desc'][loop]],
-                                 'GATEcard':[gateFileExist],
-                                 'CatCert':[casteFileExist], 
-                                 'GradCert':[gradFileExist],
-                                 'PayRef':[payFileExist]
-                                  }
-                                  )
+        allFileInfo=allFileInfo.append(
+                    pd.DataFrame({
+                             'AppNo':[allApps[loop]], 
+                             'Name':[xlsData['full_name'][loop]],
+                             'Stream':[xlsData['exam_reg_no_4'][loop][0:2]], 
+                             'Email':[xlsData['email_id'][loop]],
+                             'Mobile':[int(xlsData['mobile'][loop])],
+                             'Category':[xlsData['birth_category_desc'][loop]],
+                             'GATEcard':[gateFileExist],
+                             'CatCert':[casteFileExist], 
+                             'GradCert':[gradFileExist],
+                             'PayRef':[payFileExist],
+                             'catCertPath': catCertPath,
+                             'gradFilePath':gradFilePath,
+                             'gateFilePath':gateFilePath
+                              })
                                     )
     allFileInfo.reset_index(drop=True,inplace=True)    
     # Dump email addresses - missing docs
     warnList=allFileInfo[(allFileInfo['GATEcard']==0) | (allFileInfo['CatCert']==0) |
                 (allFileInfo['GradCert']==0)][['AppNo','Name','Email', 'Mobile']]
     warnList.to_excel('warnList.xlsx')
+    allFileInfo.to_excel('full_df.xlsx')
     print('File written to: '+ os.path.join(os.getcwd(),'warnList.xlsx'))
+    print('File written to: '+ os.path.join(os.getcwd(),'full_df.xlsx'))
 
 if __name__== "__main__":    
     #Var Decl
@@ -88,3 +109,4 @@ if __name__== "__main__":
     #Assumes excel sheet with all info is in <folder> and named <xlsFile>
     chkFun(xlsFile, folder)
     # Output dumped to xlsx file
+  
